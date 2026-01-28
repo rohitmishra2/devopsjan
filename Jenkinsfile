@@ -35,16 +35,19 @@ pipeline {
                bat 'docker build -t mvnproj:1.0 .'
             }
         }
-         stage('Push Docker Image to DockerHub') {
+        stage('Push Docker Image to DockerHub') {
             steps {
                echo "Push Docker Image to DockerHub for mvn project"
                withCredentials([string(credentialsId: 'dockerhubpwd', variable: 'DOCKER_PASS')]) {
 
-               bat "echo %DOCKER_PASS% | docker login -u rohit58677 --password-stdin"
-               bat "docker tag mvnproj:1.0 rohit58677/mymvnproj:latest"
-               bat "docker push rohit58677/mymvnproj:latest"
+               bat '''
+                 echo %DOCKER_PASS% | docker login -u rohit58677 --password-stdin
+                 docker tag mvnproj:1.0 rohit58677/mymvnproj:latest
+                 docker push rohit58677/mymvnproj:latest
+                  '''
 
-        }
+
+           }
     }
 }
 
