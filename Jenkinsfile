@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
      tools{
@@ -30,28 +29,14 @@ pipeline {
                bat 'mvn clean package -DskipTests' 
             }
         }
-        stage(' Build the Docker Image') {
+        stage('Test The Appln') {
             steps {
-               echo "Build the Docker Image for mvn project"
-               bat 'docker build -t mvnproj:1.0 .'
+               echo "Testing my JAVA project"
             }
         }
-         stage('Push Docker Image to DockerHub') {
+        stage('Deploy the project') {
             steps {
-               echo "Push Docker Image to DockerHub for mvn project"
-                 withCredentials([string(credentialsId: 'dockerhubpwd', variable: 'DOCKER_PASS')]) {
-                         bat '''
-   	        echo %DOCKER_PASS% | docker login -u deepikkaa20 --password-stdin
-                         docker tag mvnproj:1.0 deepikkaa20/mymvnproj:latest
-                         docker push deepikkaa20/mymvnproj:latest
-                         '''
-                  }
-            }
-        }
-       
-        stage('Deploy the project using Container') {
-            steps {
-                echo "Running Java Application"
+                echo "Project is getting Deployed"
             }
         }
     }
