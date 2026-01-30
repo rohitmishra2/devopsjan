@@ -102,7 +102,6 @@ pipeline {
 
 
         stage('Deploy the project using k8s') {
-<<<<<<< HEAD
             steps {
                 echo "Running Java Application in k8s"
                 bat '''
@@ -151,7 +150,6 @@ pipeline {
 		}
         
     }
-=======
     steps {
         echo "Running Java Application in k8s"
         bat '''
@@ -209,8 +207,7 @@ pipeline {
     }
 }
 
->>>>>>> 3ff076ba669a4269eb78c70bbbc46f2386680372
-	}
+}
     post {
         success {
             echo 'I succeeded!'
