@@ -127,6 +127,7 @@ pipeline {
                     steps{
                         echo "Running minikube dashboard"
                         bat '''
+                           minikube addons enable metrics-server
                            minikube dashboard
                            echo "Dashboard is running"
                         '''
