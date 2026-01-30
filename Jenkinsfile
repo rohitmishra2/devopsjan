@@ -101,32 +101,58 @@ pipeline {
 }
 
 
-        stage('Deploy the project using Container') {
+        stage('Deploy the project using k8s') {
             steps {
-                echo "Running Java Application"
+                echo "Running Java Application in k8s"
                 bat '''
-	               docker rm -f myjavaappcont || exit 0
-	               docker run --name myjavaappcont deepikkaa20/mymvnproj:latest
+                   minikube delete
+                   minikube start
+                   minikube status
+                   
+                   minikube image load rohit58677/mymvnproj:latest
+                   kubectl apply -f deployment.yaml
+                   sleep 20
+                   kubectl get pods
+                   kubectl apply -f services.yaml
+                   sleep 10
+                   kubectl get services
+                   minikube image ls
+	               
 	            '''
             }
         }
-
+        stage('Parrallel Loading of services and Dashboard'){
+			parallel{
+				stage('Run minikube dashboard'){
+                    steps{
+                        echo "Running minikube dashboard"
+                        bat '''
+                           minikube dashboard
+                           echo "Dashboard is running"
+                        '''
+                    }
+					
+				}
+				stage('Run minikube services'){
+                    steps{
+                        echo "Running minikube services"
+                        bat '''
+                           minikube service --all
+                           echo "All services are running"
+                        '''				
+				}
+			}
+		}
+        
     }
- 
+	}
     post {
-
         success {
-
             echo 'I succeeded!'
-
+           
         }
-
         failure {
-
             echo 'Failed........'
-
         }
-
     }
-
 }
