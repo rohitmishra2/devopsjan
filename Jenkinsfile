@@ -102,50 +102,63 @@ pipeline {
 
 
         stage('Deploy the project using k8s') {
+    steps {
+        echo "Running Java Application in k8s"
+        bat '''
+            set MINIKUBE_EXE="C:\\Program Files\\Kubernetes\\Minikube\\minikube.exe"
+
+            %MINIKUBE_EXE% delete
+            %MINIKUBE_EXE% start
+            %MINIKUBE_EXE% status
+
+            %MINIKUBE_EXE% update-context
+            kubectl config use-context minikube
+            kubectl cluster-info
+
+            %MINIKUBE_EXE% image load rohit58677/mymvnproj:latest
+
+            kubectl apply -f deployment.yaml
+            timeout /t 20 /nobreak
+            kubectl get pods
+
+            kubectl apply -f services.yaml
+            timeout /t 10 /nobreak
+            kubectl get services
+
+            %MINIKUBE_EXE% image ls
+        '''
+    }
+}
+
+        stage('Parrallel Loading of services and Dashboard') {
+    parallel {
+        stage('Enable metrics-server') {
             steps {
-                echo "Running Java Application in k8s"
+                echo "Enabling metrics-server"
                 bat '''
-                   minikube delete
-                   minikube start
-                   minikube status
-                   
-                   minikube image load rohit58677/mymvnproj:latest
-                   kubectl apply -f deployment.yaml
-                   sleep 20
-                   kubectl get pods
-                   kubectl apply -f services.yaml
-                   sleep 10
-                   kubectl get services
-                   minikube image ls
-	               
-	            '''
+                    set MINIKUBE_EXE="C:\\Program Files\\Kubernetes\\Minikube\\minikube.exe"
+
+                    %MINIKUBE_EXE% addons enable metrics-server
+                    kubectl get pods -n kube-system
+                '''
             }
         }
-        stage('Parrallel Loading of services and Dashboard'){
-			parallel{
-				stage('Run minikube dashboard'){
-                    steps{
-                        echo "Running minikube dashboard"
-                        bat '''
-                           minikube addons enable metrics-server
-                           minikube dashboard
-                           echo "Dashboard is running"
-                        '''
-                    }
-					
-				}
-				stage('Run minikube services'){
-                    steps{
-                        echo "Running minikube services"
-                        bat '''
-                           minikube service --all
-                           echo "All services are running"
-                        '''				
-				}
-			}
-		}
-        
+
+        stage('Show Services URLs') {
+            steps {
+                echo "Listing services and URLs"
+                bat '''
+                    set MINIKUBE_EXE="C:\\Program Files\\Kubernetes\\Minikube\\minikube.exe"
+
+                    kubectl get svc
+                    %MINIKUBE_EXE% service list
+                    %MINIKUBE_EXE% service --all --url
+                '''
+            }
+        }
     }
+}
+
 	}
     post {
         success {
